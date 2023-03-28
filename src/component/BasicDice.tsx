@@ -7,7 +7,8 @@ import {
   SliderMark, Box
 } from '@chakra-ui/react'
 import styled from '@emotion/styled';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useSpring, animated } from 'react-spring';
 
 
 const BasicDice = () => {
@@ -19,17 +20,40 @@ const BasicDice = () => {
   })
 
   const [sliderValue, setSliderValue] = useState(50)
-
+  const [winChance, setWinChance] = useState(50)
+  const [result, setResult] = useState(50)
+  const [isUnder, setIsUnder] = useState(true)
   const labelStyles = {
     mt: '2',
     ml: '-2.5',
     fontSize: 'sm',
   }
 
+  const NumberAnimate = (n: any) => {
+    const { number } = useSpring({
+      from: {number: 0},
+      number: n,
+      delay: 10,
+      config: {mass: 1, tension: 10, friction:10}
+    })
+    return <animated.div>{number.to((n) => n.toFixed(0))}</animated.div> 
+  }
 
   const onChangeAmount = (evt: any) => {
     setDefaultValue({ ...defaultValue, amount: evt.target.value })
   }
+
+  // const onChangeAmount = (evt: any) => {
+  //   setDefaultValue({ ...defaultValue, amount: evt.target.value })
+  // }
+
+  useEffect(() => {
+    if (isUnder) {
+      setWinChance(sliderValue)
+    } else {
+      setWinChance(100 - sliderValue)
+    }
+  }, [sliderValue, isUnder])
 
   const onBlurAmount = (evt: any) => {
     if (Number(evt.target.value) < 100) {
@@ -37,7 +61,12 @@ const BasicDice = () => {
     } else {
       setDefaultValue({ ...defaultValue, winAmount: defaultValue.amount * defaultValue.payout })
     }
+  }
 
+  const onRoll = () => {
+    const res = Math.floor(Math.random() * (100 - 0 + 1) + 0)
+    setResult(res)
+    console.log("roll", res)
   }
 
   return (
@@ -55,6 +84,7 @@ const BasicDice = () => {
             placeholder='Win mount' name='winAmount' value={defaultValue.winAmount} type="number" />
 
           <StyleButton
+          onClick={onRoll}
             _active={{
               transform: 'scale(0.98)',
             }}
@@ -63,13 +93,21 @@ const BasicDice = () => {
             }} >Roll Now</StyleButton>
         </GridItem>
         <GridItem colSpan={3} style={{ borderLeft: '1px solid #fff' }} >
-          <Box m={10} pb={2} position="relative" >
-            <img src="https://bc.game/assets/dice.1007262a.png" alt=""
-              style={{ height: '70px', width: '70px', position: 'absolute', left: '47%' }} />
+
+          <Box m={14} pb={5} position="relative" >
+            <div style={{left:`${result - 5}%`}}
+            className='flex flex-col items-center justify-center absolute' >
+              <ResultDiv>
+                {NumberAnimate(result)}
+              </ResultDiv>
+              <img src="https://bc.game/assets/dice.1007262a.png" alt=""
+                style={{ height: '70px', width: '70px'}} />
+            </div>
+
 
           </Box>
-          <StyleDiv className='mx-8' >
-            <Box pl={14} pr={14} pt={2} >
+          <StyleDiv className='mx-8' style={{marginTop:'200px'}} >
+            <Box pl={10} pr={10} pt={2} >
               <Slider aria-label='slider-ex-6' onChange={(val) => setSliderValue(val)}>
                 <StyledSliderMark value={0} {...labelStyles}>
                   0
@@ -97,8 +135,8 @@ const BasicDice = () => {
                 >
                   {sliderValue}
                 </SliderMark>
-                <SliderTrack background='#ED6300' p={1.5} borderRadius="15px" >
-                  <SliderFilledTrack background='#3BC117' p={1.5} borderRadius="15px" />
+                <SliderTrack background={`${isUnder ? '#ED6300' : '#3BC117'}`} p={1.5} borderRadius="15px" >
+                  <SliderFilledTrack background={`${isUnder ? '#3BC117' : '#ED6300'}`} p={1.5} borderRadius="15px" />
                 </SliderTrack>
                 <SliderThumb height={10} width={35} />
               </Slider>
@@ -113,16 +151,16 @@ const BasicDice = () => {
             </TitleBorder>
 
             <TitleBorder>
-              Roll under
-              <FieldBorder>
-                {defaultValue.payout}
+              Roll {`${isUnder ? 'Under' : 'Over'}`}
+              <FieldBorder style={{ cursor: 'pointer' }} onClick={() => setIsUnder(!isUnder)} >
+                {sliderValue}
               </FieldBorder>
             </TitleBorder>
 
             <TitleBorder>
               Win chance
               <FieldBorder>
-                {defaultValue.payout}
+                {winChance}%
               </FieldBorder>
             </TitleBorder>
           </StyleDiv>
@@ -152,6 +190,14 @@ const StyleButton = styled(Button)({
 const StyleDiv = styled('div')({
   background: '#222328',
   marginTop: '120px'
+})
+
+const ResultDiv = styled('div')({
+  border: '10px solid #222328',
+  fontSize: '50px',
+  fontWeight: 'bolder',
+  padding: '0px 20px',
+  marginBottom: '20px'
 })
 
 const TitleBorder = styled('div')({
