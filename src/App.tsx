@@ -2,14 +2,8 @@ import * as React from "react"
 import {
   ChakraProvider,
   Box,
-  Text,
-  Link,
-  VStack,
-  Code,
   Grid,
-  theme,
   extendTheme,
-  Button
 } from "@chakra-ui/react"
 import BasicDice from "./component/BasicDice"
 
