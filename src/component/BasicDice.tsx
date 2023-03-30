@@ -35,13 +35,16 @@ const BasicDice = () => {
     fontSize: "sm",
   };
 
+  const [listResult, setListResult]: any = useState([])
+
   const NumberAnimate = (n: any) => {
     const { number } = useSpring({
       from: { number: 0 },
       number: n,
       delay: 10,
       config: { mass: 1, tension: 10, friction: 10 },
-    });
+    })
+    console.log('n', n)
     return <animated.div>{number.to((n) => n.toFixed(0))}</animated.div>;
   };
 
@@ -88,10 +91,45 @@ const BasicDice = () => {
     }
   };
 
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     const arrTemp: any = listResult
+  //     if (isUnder) {
+  //       if (result < sliderValue) {
+  //         arrTemp.push({ value: result, win: true })
+  //       } else {
+  //         arrTemp.push({ value: result, win: false })
+  //       }
+  //     } else {
+  //       if (result < sliderValue) {
+  //         arrTemp.push({ value: result, win: false })
+  //       } else {
+  //         arrTemp.push({ value: result, win: true })
+  //       }
+  //     }
+  //     setListResult(arrTemp)
+  //   }, 2200);
+  //   return () => clearTimeout(timer);
+  // }, [result])
+
   const onRoll = () => {
     const res = Math.floor(Math.random() * (100 - 0 + 1) + 0);
     setResult(res);
-    console.log("roll", res);
+    const arrTemp: any = listResult
+    if (isUnder) {
+      if (res < sliderValue) {
+        arrTemp.push({ value: res, win: true })
+      } else {
+        arrTemp.push({ value: res, win: false })
+      }
+    } else {
+      if (res < sliderValue) {
+        arrTemp.push({ value: res, win: false })
+      } else {
+        arrTemp.push({ value: res, win: true })
+      }
+    }
+
   };
 
   return (
@@ -134,9 +172,15 @@ const BasicDice = () => {
           </StyleButton>
         </GridItem>
         <GridItem colSpan={3} style={{ borderLeft: "1px solid #fff" }}>
-          <Box  position="relative" style={{background:'#272A2D', margin:'10px 20px', height:'50px'}} >
-            Game results will be displayed here.
-          </Box>
+          {listResult ?
+            <div className="flex flex-row" >
+              {listResult.map((res: any, index: any) => (
+                res?.win ? <WinDiv key={index} >{res?.value}</WinDiv> : <LossDiv key={index}>{res?.value}</LossDiv>
+              ))}
+            </div>
+            : <Box position="relative" style={{ background: '#272A2D', margin: '10px 20px', height: '50px' }} >
+              Game results will be displayed here.
+            </Box>}
           <Box m={14} pb={5} position="relative">
             <div
               style={{ left: `${result - 5}%`, transition: "left 2s" }}
@@ -254,6 +298,22 @@ const StyleButton = styled(Button)({
   height: "60px",
   fontWeight: "bold",
 });
+
+const WinDiv = styled('div')({
+  background: '#3BC117',
+  padding: '10px 20px',
+  margin: '0px 5px',
+  width: '100px',
+  fontWeight:'bold',
+})
+
+const LossDiv = styled('div')({
+  background: '#31343C',
+  padding: '10px 20px',
+  margin: '0px 5px',
+  width: '100px',
+  fontWeight:'bold',
+})
 
 const BtnWinChance = styled(Button)({
   backgroundImage: "#31343C",
