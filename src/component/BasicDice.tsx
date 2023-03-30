@@ -61,6 +61,22 @@ const BasicDice = () => {
     }
   }, [sliderValue, isUnder]);
 
+  const onSlideValue = (type: any) => {
+    if (type === "plus") {
+      if (sliderValue + 5 >= 99) {
+        setSliderValue(99);
+      } else {
+        setSliderValue(sliderValue + 5);
+      }
+    } else {
+      if (sliderValue - 5 <= 2) {
+        setSliderValue(2);
+      } else {
+        setSliderValue(sliderValue - 5);
+      }
+    }
+  };
+
   const onBlurAmount = (evt: any) => {
     if (Number(evt.target.value) < 100) {
       setDefaultValue({ ...defaultValue, amount: 100 });
@@ -118,6 +134,9 @@ const BasicDice = () => {
           </StyleButton>
         </GridItem>
         <GridItem colSpan={3} style={{ borderLeft: "1px solid #fff" }}>
+          <Box  position="relative" style={{background:'#272A2D', margin:'10px 20px', height:'50px'}} >
+            Game results will be displayed here.
+          </Box>
           <Box m={14} pb={5} position="relative">
             <div
               style={{ left: `${result - 5}%`, transition: "left 2s" }}
@@ -131,6 +150,7 @@ const BasicDice = () => {
             <Box pl={10} pr={10} pt={2}>
               <Slider
                 aria-label="slider-ex-6"
+                value={sliderValue}
                 onChange={(val) => setSliderValue(val)}
               >
                 <StyledSliderMark value={0} {...labelStyles}>
@@ -192,7 +212,24 @@ const BasicDice = () => {
 
             <TitleBorder>
               Win chance
-              <FieldBorder>{winChance}%</FieldBorder>
+              <FieldBorder className="flex flex-row " style={{ width: "auto" }}>
+                {winChance}%
+                <BtnWinChance
+                  className="ml-5"
+                  onClick={() => setSliderValue(2)}
+                >
+                  Min
+                </BtnWinChance>
+                <BtnWinChance onClick={() => onSlideValue("minor")}>
+                  -5
+                </BtnWinChance>
+                <BtnWinChance onClick={() => onSlideValue("plus")}>
+                  +5
+                </BtnWinChance>
+                <BtnWinChance onClick={() => setSliderValue(99)}>
+                  Max
+                </BtnWinChance>
+              </FieldBorder>
             </TitleBorder>
           </StyleDiv>
         </GridItem>
@@ -216,6 +253,12 @@ const StyleButton = styled(Button)({
   margin: "10px 0px",
   height: "60px",
   fontWeight: "bold",
+});
+
+const BtnWinChance = styled(Button)({
+  backgroundImage: "#31343C",
+  borderRadius: "0px",
+  marginRight: "1px",
 });
 
 const StyleDiv = styled("div")({
@@ -255,6 +298,7 @@ const FieldBorder = styled("div")({
   background: "#2A2B32",
   padding: "4px 12px",
   width: "150px",
+  height: "50px",
 });
 
 export default BasicDice;
