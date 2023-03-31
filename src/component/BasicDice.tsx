@@ -5,26 +5,26 @@ import {
   Grid,
   GridItem,
   Input,
-  useColorMode,
   Slider,
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
   SliderMark,
   Box,
+  useMediaQuery
 } from "@chakra-ui/react";
 import styled from "@emotion/styled";
 import React, { useEffect, useState } from "react";
 import { useSpring, animated } from "react-spring";
 
 const BasicDice = () => {
-  const { colorMode, toggleColorMode } = useColorMode();
   const [defaultValue, setDefaultValue] = useState({
     amount: 100,
     winAmount: 198,
-    payout: 1.98,
   });
+  const [isMobile] = useMediaQuery('(max-width: 600px)')
 
+  const [payout, setPayout] = useState(1.98)
   const [sliderValue, setSliderValue] = useState(50);
   const [winChance, setWinChance] = useState(50);
   const [result, setResult] = useState(50);
@@ -35,7 +35,7 @@ const BasicDice = () => {
     fontSize: "sm",
   };
 
-  const [listResult, setListResult]: any = useState([])
+  const [listResult, setListResult]: any = useState([]);
 
   const NumberAnimate = (n: any) => {
     const { number } = useSpring({
@@ -43,8 +43,7 @@ const BasicDice = () => {
       number: n,
       delay: 10,
       config: { mass: 1, tension: 10, friction: 10 },
-    })
-    console.log('n', n)
+    });
     return <animated.div>{number.to((n) => n.toFixed(0))}</animated.div>;
   };
 
@@ -86,36 +85,39 @@ const BasicDice = () => {
     } else {
       setDefaultValue({
         ...defaultValue,
-        winAmount: defaultValue.amount * defaultValue.payout,
+        winAmount: defaultValue.amount * payout,
       });
     }
   };
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     const arrTemp: any = listResult
-  //     if (isUnder) {
-  //       if (result < sliderValue) {
-  //         arrTemp.push({ value: result, win: true })
-  //       } else {
-  //         arrTemp.push({ value: result, win: false })
-  //       }
-  //     } else {
-  //       if (result < sliderValue) {
-  //         arrTemp.push({ value: result, win: false })
-  //       } else {
-  //         arrTemp.push({ value: result, win: true })
-  //       }
-  //     }
-  //     setListResult(arrTemp)
-  //   }, 2200);
-  //   return () => clearTimeout(timer);
-  // }, [result])
+  useEffect(() => {
+    const res: any = 99/winChance
+    setPayout(res.toFixed(4))
+  }, [winChance])
+
+  useEffect(() => {
+    if(sliderValue<2) {
+      setSliderValue(2)
+    } else if (sliderValue > 99) {
+      setSliderValue(99)
+    }
+  }, [sliderValue])
+
 
   const onRoll = () => {
     const res = Math.floor(Math.random() * (100 - 0 + 1) + 0);
     setResult(res);
     const arrTemp: any = listResult
+    if(isMobile) {
+      if (arrTemp.length >= 5){
+        arrTemp.shift()
+      }
+    } else if (!isMobile) {
+      if (arrTemp.length > 8){
+        arrTemp.shift()
+      }
+    }
+
     if (isUnder) {
       if (res < sliderValue) {
         arrTemp.push({ value: res, win: true })
@@ -129,6 +131,7 @@ const BasicDice = () => {
         arrTemp.push({ value: res, win: true })
       }
     }
+    setListResult(arrTemp)
 
   };
 
@@ -172,18 +175,31 @@ const BasicDice = () => {
           </StyleButton>
         </GridItem>
         <GridItem colSpan={3} style={{ borderLeft: "1px solid #fff" }}>
-          {listResult ?
-            <div className="flex flex-row" >
-              {listResult.map((res: any, index: any) => (
-                res?.win ? <WinDiv key={index} >{res?.value}</WinDiv> : <LossDiv key={index}>{res?.value}</LossDiv>
-              ))}
+          {listResult ? (
+            <div className="flex flex-row justify-center">
+              {listResult.map((res: any, index: any) =>
+                res?.win ? (
+                  <WinDiv key={index}>{res?.value}</WinDiv>
+                ) : (
+                  <LossDiv key={index}>{res?.value}</LossDiv>
+                )
+              )}
             </div>
-            : <Box position="relative" style={{ background: '#272A2D', margin: '10px 20px', height: '50px' }} >
+          ) : (
+            <Box
+              position="relative"
+              style={{
+                background: "#272A2D",
+                margin: "10px 20px",
+                height: "50px",
+              }}
+            >
               Game results will be displayed here.
-            </Box>}
+            </Box>
+          )}
           <Box m={14} pb={5} position="relative">
             <div
-              style={{ left: `${result - 5}%`, transition: "left 2s" }}
+              style={{ left: `${result - (isMobile ? 8 : 5)}%`, transition: "left 2s" }}
               className="flex flex-col items-center justify-center absolute"
             >
               <ResultDiv>{NumberAnimate(result)}</ResultDiv>
@@ -241,7 +257,7 @@ const BasicDice = () => {
           <StyleDiv className="flex flex-row flex-wrap mx-8 p-5">
             <TitleBorder>
               Payout
-              <FieldBorder>{defaultValue.payout}</FieldBorder>
+              <FieldBorder>{payout}</FieldBorder>
             </TitleBorder>
 
             <TitleBorder>
@@ -299,21 +315,21 @@ const StyleButton = styled(Button)({
   fontWeight: "bold",
 });
 
-const WinDiv = styled('div')({
-  background: '#3BC117',
-  padding: '10px 20px',
-  margin: '0px 5px',
-  width: '100px',
-  fontWeight:'bold',
-})
+const WinDiv = styled("div")({
+  background: "#3BC117",
+  padding: "10px 20px",
+  margin: "0px 5px",
+  width: "100px",
+  fontWeight: "bold",
+});
 
-const LossDiv = styled('div')({
-  background: '#31343C',
-  padding: '10px 20px',
-  margin: '0px 5px',
-  width: '100px',
-  fontWeight:'bold',
-})
+const LossDiv = styled("div")({
+  background: "#31343C",
+  padding: "10px 20px",
+  margin: "0px 5px",
+  width: "100px",
+  fontWeight: "bold",
+});
 
 const BtnWinChance = styled(Button)({
   backgroundImage: "#31343C",
@@ -339,14 +355,14 @@ const ResultDiv = styled("div")({
   border: "10px solid #222328",
   fontSize: "50px",
   fontWeight: "bolder",
-  padding: "0px 20px",
+  padding: "0px 10px",
   marginBottom: "20px",
-  width: "150px",
+  width: "170px",
   "@media (max-width: 600px)": {
     width: "70px",
     border: "5px solid #222328",
     fontSize: "20px",
-    padding: "5px 10px",
+    padding: "5px 5px",
   },
 });
 
